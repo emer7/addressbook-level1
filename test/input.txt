@@ -59,6 +59,7 @@
   # find multiple with same keyword
   find Dickson
   # find multiple with some keywords
+  find Dickson Betsy
   find Charlie Betsy
 
 ##########################################################
