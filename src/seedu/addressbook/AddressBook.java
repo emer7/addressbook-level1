@@ -71,6 +71,7 @@ public class AddressBook {
     private static final String MESSAGE_COMMAND_HELP_PARAMETERS = "\tParameters: %1$s";
     private static final String MESSAGE_COMMAND_HELP_EXAMPLE = "\tExample: %1$s";
     private static final String MESSAGE_DELETE_PERSON_SUCCESS = "Deleted Person: %1$s";
+    private static final String MESSAGE_EDIT_PERSON_SUCCESS = "Edited Person: %1$s";
     private static final String MESSAGE_DISPLAY_PERSON_DATA = "%1$s  Phone Number: %2$s  Email: %3$s";
     private static final String MESSAGE_DISPLAY_LIST_ELEMENT_INDEX = "%1$d. ";
     private static final String MESSAGE_GOODBYE = "Exiting Address Book... Good bye!";
@@ -124,6 +125,15 @@ public class AddressBook {
     private static final String COMMAND_CLEAR_WORD = "clear";
     private static final String COMMAND_CLEAR_DESC = "Clears address book permanently.";
     private static final String COMMAND_CLEAR_EXAMPLE = COMMAND_CLEAR_WORD;
+
+    private static final String COMMAND_EDIT_WORD = "edit";
+    private static final String COMMAND_EDIT_DESC = "Edit a person identified by the index number used in "
+            + "the last find/list call.";
+    private static final String COMMAND_EDIT_PARAMETER = "INDEX "
+            + "NAME "
+            + PERSON_DATA_PREFIX_PHONE + "PHONE_NUMBER "
+            + PERSON_DATA_PREFIX_EMAIL + "EMAIL";
+    private static final String COMMAND_EDIT_EXAMPLE = COMMAND_EDIT_WORD + " 1 John Doe p/98765432 e/johnd@gmail.com";
 
     private static final String COMMAND_HELP_WORD = "help";
     private static final String COMMAND_HELP_DESC = "Shows program usage instructions.";
@@ -377,6 +387,8 @@ public class AddressBook {
             return executeListAllPersonsInAddressBook();
         case COMMAND_DELETE_WORD:
             return executeDeletePerson(commandArgs);
+        case COMMAND_EDIT_WORD:
+            return executeEditPerson(commandArgs);
         case COMMAND_CLEAR_WORD:
             return executeClearAddressBook();
         case COMMAND_HELP_WORD:
@@ -556,6 +568,99 @@ public class AddressBook {
      */
     private static String getMessageForSuccessfulDelete(String[] deletedPerson) {
         return String.format(MESSAGE_DELETE_PERSON_SUCCESS, getMessageForFormattedPersonData(deletedPerson));
+    }
+
+    /**
+     * Edit person identified using last displayed index.
+     *
+     * @param commandArgs full command args string from the user
+     * @return feedback display message for the operation result
+     */
+    private static String executeEditPerson(String commandArgs) {
+        if (!isEditPersonArgsValid(commandArgs)) {
+            return getMessageForInvalidCommandInput(COMMAND_EDIT_WORD, getUsageInfoForEditCommand());
+        }
+        final int targetVisibleIndex = extractTargetIndexFromEditPersonArgs(commandArgs);
+        if (!isDisplayIndexValidForLastPersonListingView(targetVisibleIndex)) {
+            return MESSAGE_INVALID_PERSON_DISPLAYED_INDEX;
+        }
+
+        String replacementArgs = getReplacementArgsFromEditPersonArgs(commandArgs);
+
+        String[] oldPersonDataInModel = getPersonByLastVisibleIndex(targetVisibleIndex);
+        String[] editedPersonData = editPersonFromAddressBook(oldPersonDataInModel, replacementArgs);
+        return getMessageForSuccessfulEdit(editedPersonData);
+    }
+
+    /**
+     * Checks validity of edit person argument string's format.
+     *
+     * @param rawArgs raw command args string for the edit person command
+     * @return whether the input args string is valid
+     */
+    private static boolean isEditPersonArgsValid(String rawArgs) {
+        return isEditPersonIndexArgsValid(rawArgs) && isEditPersonReplacementArgsValid(rawArgs);
+    }
+
+    private static boolean isEditPersonIndexArgsValid(String rawArgs) {
+        try {
+            ArrayList<String> rawArgsSplitByWhiteSpace = splitByWhitespace(rawArgs);
+            // use standard libraries to parse
+            final int extractedIndex = Integer.parseInt(rawArgsSplitByWhiteSpace.get(0));
+            return extractedIndex >= DISPLAYED_INDEX_OFFSET;
+        } catch (NumberFormatException nfe) {
+            return false;
+        }
+    }
+
+    private static boolean isEditPersonReplacementArgsValid(String rawArgs) {
+        String replacementArgs = getReplacementArgsFromEditPersonArgs(rawArgs);
+        if (!isPersonDataExtractableFrom(replacementArgs)) {
+            return false;
+        }
+
+        String replacementName = extractNameFromPersonString(replacementArgs);
+        String replacementPhone = extractPhoneFromPersonString(replacementArgs);
+        String replacementEmail = extractEmailFromPersonString(replacementArgs);
+
+        Boolean isNameValid = isPersonNameValid(replacementName);
+        Boolean isPhoneValid = isPersonPhoneValid(replacementPhone);
+        Boolean isEmailValid = isPersonEmailValid(replacementEmail);
+
+        return isNameValid && isPhoneValid && isEmailValid;
+    }
+
+    /**
+     * Extracts the target's index from the raw edit person args string
+     *
+     * @param rawArgs raw command args string for the edit person command
+     * @return extracted index
+     */
+    private static int extractTargetIndexFromEditPersonArgs(String rawArgs) {
+        ArrayList<String> splittedRawArgs = splitByWhitespace(rawArgs);
+        return Integer.parseInt(splittedRawArgs.get(0));
+    }
+
+    /**
+     * Get the replacement args string from the edit person full args
+     *
+     * @param rawArgs raw command args string for the edit person command
+     * @return extracted string
+     */
+    private static String getReplacementArgsFromEditPersonArgs(String rawArgs) {
+        String replacementArgs = rawArgs.replaceFirst("\\d+\\s+", "");
+        return replacementArgs;
+    }
+
+    /**
+     * Constructs a feedback message for a successful edit person command execution.
+     *
+     * @see #executeEditPerson(String)
+     * @param editedPerson successfully edited
+     * @return successful edit person feedback message
+     */
+    private static String getMessageForSuccessfulEdit(String[] editedPerson) {
+        return String.format(MESSAGE_EDIT_PERSON_SUCCESS, getMessageForFormattedPersonData(editedPerson));
     }
 
     /**
@@ -802,6 +907,27 @@ public class AddressBook {
     }
 
     /**
+     * Execute replacement of old data in address book with new data
+     *
+     * @param personToBeEdited old data in address book to be replaced
+     * @param replacementString new data to replace old data
+     */
+    private static String[] editPersonFromAddressBook(String[] personToBeEdited,
+            String replacementString) {
+
+        String replacementName = extractNameFromPersonString(replacementString);
+        String replacementPhone = extractPhoneFromPersonString(replacementString);
+        String replacementEmail = extractEmailFromPersonString(replacementString);
+
+        editNameForPerson(personToBeEdited, replacementName);
+        editPhoneForPerson(personToBeEdited, replacementPhone);
+        editEmailForPerson(personToBeEdited, replacementEmail);
+
+        savePersonsToFile(getAllPersonsInAddressBook(), storageFilePath);
+        return personToBeEdited;
+    }
+
+    /**
      * Returns all persons in the address book
      */
     private static ArrayList<String[]> getAllPersonsInAddressBook() {
@@ -858,6 +984,33 @@ public class AddressBook {
      */
     private static String getEmailFromPerson(String[] person) {
         return person[PERSON_DATA_INDEX_EMAIL];
+    }
+
+    /**
+     * Edit the given person name
+     *
+     * @param person whose name you want to edit
+     */
+    private static void editNameForPerson(String[] person, String replacementName) {
+        person[PERSON_DATA_INDEX_NAME] = replacementName;
+    }
+
+    /**
+     * Edit the given person phone
+     *
+     * @param person whose phone you want to edit
+     */
+    private static void editPhoneForPerson(String[] person, String replacementPhone) {
+        person[PERSON_DATA_INDEX_PHONE] = replacementPhone;
+    }
+
+    /**
+     * Edit the given person email
+     *
+     * @param person whose email you want to edit
+     */
+    private static void editEmailForPerson(String[] person, String replacementEmail) {
+        person[PERSON_DATA_INDEX_EMAIL] = replacementEmail;
     }
 
     /**
@@ -1086,6 +1239,7 @@ public class AddressBook {
                 + getUsageInfoForFindCommand() + LS
                 + getUsageInfoForViewCommand() + LS
                 + getUsageInfoForDeleteCommand() + LS
+                + getUsageInfoForEditCommand() + LS
                 + getUsageInfoForClearCommand() + LS
                 + getUsageInfoForExitCommand() + LS
                 + getUsageInfoForHelpCommand();
@@ -1110,6 +1264,13 @@ public class AddressBook {
         return String.format(MESSAGE_COMMAND_HELP, COMMAND_DELETE_WORD, COMMAND_DELETE_DESC) + LS
                 + String.format(MESSAGE_COMMAND_HELP_PARAMETERS, COMMAND_DELETE_PARAMETER) + LS
                 + String.format(MESSAGE_COMMAND_HELP_EXAMPLE, COMMAND_DELETE_EXAMPLE) + LS;
+    }
+
+    /** Returns the string for showing 'edit' command usage instruction */
+    private static String getUsageInfoForEditCommand() {
+        return String.format(MESSAGE_COMMAND_HELP, COMMAND_EDIT_WORD, COMMAND_EDIT_DESC) + LS
+                + String.format(MESSAGE_COMMAND_HELP_PARAMETERS, COMMAND_EDIT_PARAMETER) + LS
+                + String.format(MESSAGE_COMMAND_HELP_EXAMPLE, COMMAND_EDIT_EXAMPLE) + LS;
     }
 
     /** Returns string for showing 'clear' command usage instruction */

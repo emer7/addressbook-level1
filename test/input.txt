@@ -92,6 +92,20 @@
   list
 
 ##########################################################
+# test edit person command
+##########################################################
+
+# last active view: [1] betsy [2] dickson
+
+  # should edit well
+  edit 1 billy p/90862358 e/billy@example.com
+  list
+
+  # should throw error/cannot edit
+  edit 3 john p/0987 e/john@apple.com
+  list
+
+##########################################################
 # test clear command
 ##########################################################
 

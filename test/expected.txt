@@ -66,6 +66,10 @@
 || 	Parameters: INDEX
 || 	Example: delete 1
 || 
+|| edit: Edit a person identified by the index number used in the last find/list call.
+|| 	Parameters: INDEX NAME p/PHONE_NUMBER e/EMAIL
+|| 	Example: edit 1 John Doe p/98765432 e/johnd@gmail.com
+|| 
 || clear: Clears address book permanently.
 || 	Example: clear
 || 
@@ -264,6 +268,24 @@
 || ===================================================
 || Enter command: || [Command entered:  list]
 || 	1. Betsy Choo  Phone Number: 222222  Email: benchoo@nus.edu.sg
+|| 	2. Dickson Ee  Phone Number: 444444  Email: dickson@nus.edu.sg
+|| 
+|| 2 persons found!
+|| ===================================================
+|| Enter command: || [Command entered:  edit 1 billy p/90862358 e/billy@example.com]
+|| Edited Person: billy  Phone Number: 90862358  Email: billy@example.com
+|| ===================================================
+|| Enter command: || [Command entered:  list]
+|| 	1. billy  Phone Number: 90862358  Email: billy@example.com
+|| 	2. Dickson Ee  Phone Number: 444444  Email: dickson@nus.edu.sg
+|| 
+|| 2 persons found!
+|| ===================================================
+|| Enter command: || [Command entered:  edit 3 john p/0987 e/john@apple.com]
+|| The person index provided is invalid
+|| ===================================================
+|| Enter command: || [Command entered:  list]
+|| 	1. billy  Phone Number: 90862358  Email: billy@example.com
 || 	2. Dickson Ee  Phone Number: 444444  Email: dickson@nus.edu.sg
 || 
 || 2 persons found!
