@@ -142,9 +142,9 @@ public class AddressBook {
      * used by the internal String[] storage format.
      * For example, a person's name is stored as the 0th element in the array.
      */
-    private static final int PERSON_DATA_INDEX_NAME = 0;
-    private static final int PERSON_DATA_INDEX_PHONE = 1;
-    private static final int PERSON_DATA_INDEX_EMAIL = 2;
+    private static final String PERSON_DATA_KEY_NAME = "name";
+    private static final String PERSON_DATA_KEY_PHONE = "phone";
+    private static final String PERSON_DATA_KEY_EMAIL = "email";
 
     /**
      * The number of data elements for a single person.
@@ -840,7 +840,7 @@ public class AddressBook {
      * @param person whose name you want
      */
     private static String getNameFromPerson(HashMap<String,String> person) {
-        return person.get("name");
+        return person.get(PERSON_DATA_KEY_NAME);
     }
 
     /**
@@ -849,7 +849,7 @@ public class AddressBook {
      * @param person whose phone number you want
      */
     private static String getPhoneFromPerson(HashMap<String,String> person) {
-        return person.get("phone");
+        return person.get(PERSON_DATA_KEY_PHONE);
     }
 
     /**
@@ -858,7 +858,7 @@ public class AddressBook {
      * @param person whose email you want
      */
     private static String getEmailFromPerson(HashMap<String,String> person) {
-        return person.get("email");
+        return person.get(PERSON_DATA_KEY_EMAIL);
     }
 
     /**
@@ -871,9 +871,9 @@ public class AddressBook {
      */
     private static HashMap<String,String> makePersonFromData(String name, String phone, String email) {
         final HashMap<String,String> person = new HashMap<>();
-        person.put("name", name);
-        person.put("phone", phone);
-        person.put("email", email);
+        person.put(PERSON_DATA_KEY_NAME, name);
+        person.put(PERSON_DATA_KEY_PHONE, phone);
+        person.put(PERSON_DATA_KEY_EMAIL, email);
         return person;
     }
 
@@ -1030,9 +1030,9 @@ public class AddressBook {
      * @param person String array representing the person (used in internal data)
      */
     private static boolean isPersonDataValid(HashMap<String,String> person) {
-        return isPersonNameValid(person.get("name"))
-                && isPersonPhoneValid(person.get("phone"))
-                && isPersonEmailValid(person.get("email"));
+        return isPersonNameValid(person.get(PERSON_DATA_KEY_NAME))
+                && isPersonPhoneValid(person.get(PERSON_DATA_KEY_PHONE))
+                && isPersonEmailValid(person.get(PERSON_DATA_KEY_EMAIL));
     }
 
     /*
