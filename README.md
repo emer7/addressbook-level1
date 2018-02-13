@@ -109,6 +109,18 @@ Examples:
   `delete 1`
   > Deletes the 1st person in the results of the `find` command.
 
+### Editing a person: `edit`
+
+Format: `edit INDEX NAME p/PHONE_NUMBER e/EMAIL`
+
+> Edits the person at the specified `INDEX`. 
+  The index refers to the index numbers shown in the most recent listing.
+
+Examples:
+* `list`<br>
+  `edit 1 John Doe p/98765432 e/johnd@gmail.com`
+  > Edits the 1st person in the address book.
+
 #### Clearing all entries: `clear`
 > Clears all entries from the address book.  
 Format: `clear`  
